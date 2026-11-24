@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='11' fill='white' stroke='%23dadce0'/><text x='12' y='17' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='%234285f4'>G</text></svg>">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #fff;
+    --text: #202124;
+    --muted: #70757a;
+    --search-bg: #fff;
+    --search-border: #dfe1e5;
+    --btn-bg: #f8f9fa;
+    --btn-text: #3c4043;
+    --tile-bg: #fff;
+    --hover: #f1f3f4;
+    --footer-bg: #f2f2f2;
+    --footer-border: #dadce0;
+    --shadow: rgba(32,33,36,.28);
+  }
+  body.dark {
+    --bg: #202124;
+    --text: #e8eaed;
+    --muted: #9aa0a6;
+    --search-bg: #303134;
+    --search-border: #303134;
+    --btn-bg: #303134;
+    --btn-text: #e8eaed;
+    --tile-bg: #303134;
+    --hover: #3c4043;
+    --footer-bg: #171717;
+    --footer-border: #3c4043;
+    --shadow: rgba(0,0,0,.5);
+  }
+
+  body {
+    font-family: arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: background .3s, color .3s;
+  }
+
+  /* ============ TOPO ============ */
+  header { padding: 12px 16px 0; }
+  .top-right { display: flex; align-items: center; justify-content: flex-end; gap: 8px; position: relative; }
+  .top-link { color: var(--text); font-size: 13px; text-decoration: none; padding: 8px 6px; }
+  .top-link:hover { text-decoration: underline; }
+  .icon-btn {
+    width: 40px; height: 40px; border: none; border-radius: 50%;
+    background: transparent; color: #5f6368; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  body.dark .icon-btn { color: #9aa0a6; }
+  .icon-btn:hover { background: var(--hover); }
+  .login-btn {
+    background: #0b57d0; color: #fff; text-decoration: none;
+    font-size: 14px; padding: 9px 20px; border-radius: 24px; margin-left: 6px;
+  }
+  .login-btn:hover { background: #1a63cc; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+
+  /* Painel de apps */
+  .apps-panel {
+    position: absolute; top: 48px; right: 8px; z-index: 100;
+    width: 324px; background: var(--tile-bg); border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.28); padding: 12px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+  }
+  .app-item {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 14px 4px; border-radius: 12px; text-decoration: none;
+    color: var(--text); font-size: 12px; text-align: center;
+  }
+  .app-item:hover { background: var(--hover); }
+  .app-icon {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--bg); border: 1px solid var(--footer-border);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 17px;
+  }
+  .app-icon.plain { background: #ff0000; border: none; color: #fff; }
+  .gradient-text {
+    background: linear-gradient(90deg,#4285f4,#ea4335,#fbbc05,#34a853);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* ============ CONTEÚDO ============ */
+  main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: max(12vh, 60px) 16px 60px; }
+
+  .logo { font-size: clamp(64px, 11vw, 92px); font-weight: 500; letter-spacing: -.05em; user-select: none; margin-bottom: 26px; }
+
+  .search-wrap { position: relative; width: 100%; max-width: 584px; }
+  .search-box {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; height: 48px; padding: 0 8px 0 16px;
+    background: var(--search-bg); border: 1px solid var(--search-border);
+    border-radius: 24px; transition: box-shadow .15s, border-radius .1s;
+  }
+  .search-box:hover, .search-wrap.open .search-box {
+    box-shadow: 0 1px 6px var(--shadow); border-color: transparent;
+  }
+  .search-wrap.open .search-box { border-radius: 24px 24px 0 0; }
+  .search-box input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-size: 16px; color: var(--text); font-family: inherit; min-width: 0;
+  }
+  .clear-btn { border: none; background: transparent; cursor: pointer; display: flex; padding: 4px; border-radius: 50%; }
+  .clear-btn:hover { background: var(--hover); }
+  .vdivider { width: 1px; height: 26px; background: var(--footer-border); }
+  .tool-btn { border: none; background: transparent; cursor: pointer; display: flex; padding: 5px; border-radius: 50%; }
+  .tool-btn:hover { background: var(--hover); }
+
+  .suggestions {
+    position: absolute; top: 47px; left: 0; right: 0; z-index: 50;
+    background: var(--search-bg); border: 1px solid transparent;
+    border-radius: 0 0 24px 24px; box-shadow: 0 4px 6px var(--shadow);
+    padding: 6px 0 10px; display: none; overflow: hidden;
+  }
+  .search-wrap.open .suggestions { display: block; }
+  .sg-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 7px 18px; font-size: 16px; cursor: pointer; color: var(--text);
+  }
+  .sg-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sg-item:hover, .sg-item.active { background: var(--hover); }
+  .sg-icon { flex-shrink: 0; color: #9aa0a6; display: flex; }
+
+  .buttons-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+  .g-btn {
+    background: var(--btn-bg); color: var(--btn-text);
+    border: 1px solid var(--btn-bg); border-radius: 6px;
+    font-size: 14px; padding: 10px 18px; cursor: pointer; font-family: inherit;
+  }
+  .g-btn:hover { border-color: var(--footer-border); box-shadow: 0 1px 1px rgba(0,0,0,.1); }
+
+  /* Atalhos */
+  .shortcuts { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 42px; max-width: 620px; }
+  .tile {
+    position: relative; width: 112px; height: 112px;
+    background: var(--tile-bg); border-radius: 10px; border: none;
+    box-shadow: 0 1px 3px rgba(60,64,67,.25); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px; text-decoration: none; font-family: inherit;
+  }
+  .tile:hover { box-shadow: 0 4px 10px rgba(60,64,67,.35); }
+  .thumb {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--hover); display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  body.dark .thumb { background: #5f6368; }
+  .thumb img { width: 30px; height: 30px; border-radius: 6px; }
+  .thumb .letter { font-size: 24px; font-weight: 700; }
+  .tile .label {
+    font-size: 12px; color: var(--text); max-width: 100px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .tile-edit {
+    position: absolute; top: 5px; right: 5px; width: 26px; height: 26px;
+    border: none; border-radius: 50%; background: transparent; color: var(--muted);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity .15s;
+  }
+  .tile:hover .tile-edit { opacity: 1; }
+  .tile-edit:hover { background: var(--hover); }
+  .add-thumb svg { color: var(--muted); }
+
+  /* ============ RODAPÉ ============ */
+  footer { background: var(--footer-bg); font-size: 13px; color: var(--muted); }
+  .footer-row { padding: 14px 30px; }
+  .footer-row.links {
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    border-top: 1px solid var(--footer-border);
+  }
+  footer a { color: var(--muted); text-decoration: none; padding: 0 12px; }
+  footer a:hover { color: var(--text); }
+  .footer-row.links .left, .footer-row.links .right { display: flex; flex-wrap: wrap; }
+
+  /* Personalizar Chrome */
+  .customize-btn {
+    position: fixed; right: 16px; bottom: 78px; z-index: 90;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--tile-bg); color: var(--text);
+    border: 1px solid var(--footer-border); border-radius: 20px;
+    padding: 9px 16px; font-size: 12px; font-family: inherit; cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,.15);
+  }
+  .customize-btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+
+  /* ============ MODAIS ============ */
+  .overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center;
+  }
+  .modal {
+    background: var(--tile-bg); color: var(--text);
+    border-radius: 10px; padding: 24px; width: min(420px, 92vw);
+    box-shadow: 0 8px 30px rgba(0,0,0,.4);
+  }
+  .modal h3 { font-size: 18px; font-weight: 400; margin-bottom: 20px; }
+  .modal label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .modal input {
+    width: 100%; margin-top: 6px; padding: 10px 12px; font-size: 14px;
+    border: 1px solid var(--footer-border); border-radius: 6px;
+    background: var(--bg); color: var(--text); outline: none; font-family: inherit;
+  }
+  .modal input:focus { border-color: #0b57d0; }
+  .modal-actions { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .modal-actions .spacer { flex: 1; }
+  .text-btn {
+    background: transparent; border: none; color: #0b57d0;
+    font-size: 14px; font-family: inherit; padding: 8px 12px;
+    border-radius: 6px; cursor: pointer;
+  }
+  .text-btn:hover { background: rgba(11,87,208,.08); }
+  .text-btn.danger { color: #d93025; }
+  .text-btn.danger:hover { background: rgba(217,48,37,.08); }
+  .pill-btn {
+    background: #0b57d0; color: #fff; border: none; border-radius: 20px;
+    font-size: 14px; font-family: inherit; padding: 9px 22px; cursor: pointer;
+  }
+  .pill-btn:hover { background: #1a63cc; }
+
+  .swatches { display: flex; gap: 12px; flex-wrap: wrap; }
+  .swatch {
+    width: 68px; height: 52px; border-radius: 8px; cursor: pointer;
+    border: 2px solid transparent; position: relative;
+  }
+  .swatch.selected { border-color: #0b57d0; }
+  .swatch span {
+    position: absolute; bottom: 4px; left: 0; right: 0;
+    font-size: 10px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.8); text-align: center;
+  }
+
+  /* Toast */
+  #toast {
+    position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(10px);
+    background: #3c4043; color: #fff; padding: 11px 18px; border-radius: 8px;
+    font-size: 13px; opacity: 0; pointer-events: none; transition: .25s; z-index: 300;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="top-right">
+    <a class="top-link" href="https://mail.google.com">Gmail</a>
+    <a class="top-link" href="https://www.google.com/imghp?hl=pt-BR">Imagens</a>
+    <button class="icon-btn" id="appsBtn" title="Apps do Google">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM6 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM6 18c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/></svg>
+    </button>
+    <a class="login-btn" href="https://accounts.google.com">Fazer login</a>
+    <!-- Painel de apps -->
+    <div class="apps-panel hidden" id="appsPanel"></div>
+  </nav>
+</header>
+
+<main>
+  <h1 class="logo" aria-label="Google">
+    <span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span>
+  </h1>
+
+  <div class="search-wrap" id="searchWrap">
+    <form class="search-box" id="searchForm" autocomplete="off">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#9aa0a6" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input id="searchInput" type="text" aria-label="Pesquisar">
+      <button type="button" class="clear-btn hidden" id="clearBtn" title="Limpar">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#70757a" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <span class="vdivider"></span>
+      <button type="button" class="tool-btn" id="micBtn" title="Pesquisa por voz">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path fill="#4285f4" d="M12 15c1.66 0 3-1.31 3-2.97V5c0-1.66-1.34-3-3-3S9 3.34 9 5v7.03C9 13.69 10.34 15 12 15z"/><path fill="#fbbc05" d="M7.05 16.87A6.9 6.9 0 0 0 12 19a6.9 6.9 0 0 0 4.95-2.13l-1.42-1.42A4.9 4.9 0 0 1 12 17a4.9 4.9 0 0 1-3.53-1.55l-1.42 1.42z"/><path fill="#34a853" d="M11 18.5h2V22h-2z"/></svg>
+      </button>
+      <button type="button" class="tool-btn" id="lensBtn" title="Pesquisa por imagem">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M4 10A6 6 0 0 1 10 4" stroke="#4285f4"/><path d="M10 4A6 6 0 0 1 16 10" stroke="#ea4335"/><path d="M16 10A6 6 0 0 1 10 16" stroke="#fbbc05"/><path d="M10 16A6 6 0 0 1 4 10" stroke="#34a853"/><path d="M14.6 14.6L20 20" stroke="#4285f4"/></svg>
+      </button>
+    </form>
+    <div class="suggestions" id="suggestions"></div>
+  </div>
+
+  <div class="buttons-row">
+    <button class="g-btn" id="searchBtn">Pesquisa Google</button>
+    <button class="g-btn" id="luckyBtn">Estou com sorte</button>
+  </div>
+
+  <div class="shortcuts" id="shortcuts"></div>
+</main>
+
+<footer>
+  <div class="footer-row"><span>Brasil</span></div>
+  <div class="footer-row links">
+    <div class="left">
+      <a href="https://about.google/">Sobre</a>
+      <a href="https://ads.google.com/">Publicidade</a>
+      <a href="https://smallbusiness.withgoogle.com/">Negócios</a>
+      <a href="https://www.google.com/search/howsearchworks/">Como funciona a Pesquisa</a>
+    </div>
+    <div class="right">
+      <a href="https://policies.google.com/privacy">Privacidade</a>
+      <a href="https://policies.google.com/terms">Termos</a>
+      <a href="https://www.google.com/preferences?hl=pt-BR">Configurações</a>
+    </div>
+  </div>
+</footer>
+
+<button class="customize-btn" id="custBtn">
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+  Personalizar Chrome
+</button>
+
+<!-- Modal adicionar/editar atalho -->
+<div class="overlay hidden" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">Adicionar atalho</h3>
+    <label>Nome<input id="mName" type="text" placeholder="Nome do atalho"></label>
+    <label>URL<input id="mUrl" type="text" placeholder="https://exemplo.com"></label>
+    <div class="modal-actions">
+      <button class="text-btn danger hidden" id="mRemove">Remover</button>
+      <span class="spacer"></span>
+      <button class="text-btn" id="mCancel">Cancelar</button>
+      <button class="pill-btn" id="mDone">Concluído</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal personalizar fundo -->
+<div class="overlay hidden" id="custOverlay">
+  <div class="modal">
+    <h3>Personalizar fundo</h3>
+    <div class="swatches" id="swatches"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+
+/* ================= DADOS ================= */
+let shortcuts = JSON.parse(localStorage.getItem('gg_shortcuts') || 'null') || [
+  { name: 'YouTube',   url: 'https://www.youtube.com' },
+  { name: 'Gmail',     url: 'https://mail.google.com' },
+  { name: 'Maps',      url: 'https://maps.google.com' },
+  { name: 'WhatsApp',  url: 'https://web.whatsapp.com' },
+];
+let history_ = JSON.parse(localStorage.getItem('gg_history') || '[]');
+
+const SUGGESTIONS = [
+  'previsão do tempo hoje','cotação do dólar','notícias de hoje','google tradutor',
+  'youtube','gmail login','whatsapp web','instagram','netflix','wikipédia',
+  'rastreamento correios','resultado do jogo de hoje','filmes em cartaz','receita de bolo simples',
+  'significado dos sonhos','como fazer pudim','ibge população','fgts consulta','irpf 2025',
+  'previsão copa do brasil','bbc brasil','globo esporte','conversor de moedas','calculadora'
+];
+
+const APPS = [
+  { n:'Conta',     u:'https://myaccount.google.com', t:'👤' },
+  { n:'Pesquisa',  u:'https://www.google.com',       t:'<span style="color:#4285f4">G</span><span style="color:#ea4335">o</span>' },
+  { n:'Maps',      u:'https://maps.google.com',      t:'<span style="color:#34a853">M</span>' },
+  { n:'YouTube',   u:'https://www.youtube.com',      t:'▶', plain:true },
+  { n:'Play',      u:'https://play.google.com',      t:'<span class="gradient-text">▶</span>' },
+  { n:'Gmail',     u:'https://mail.google.com',      t:'<span style="color:#ea4335">M</span>' },
+  { n:'Meet',      u:'https://meet.google.com',      t:'📹' },
+  { n:'Chat',      u:'https://chat.google.com',      t:'💬' },
+  { n:'Drive',     u:'https://drive.google.com',     t:'<span class="gradient-text">▲</span>' },
+  { n:'Agenda',    u:'https://calendar.google.com',  t:'<span style="color:#4285f4;font-size:13px">31</span>' },
+  { n:'Fotos',     u:'https://photos.google.com',    t:'<span class="gradient-text">✿</span>' },
+  { n:'Tradutor',  u:'https://translate.google.com', t:'<span style="color:#4285f4;font-size:13px">A文</span>' },
+  { n:'Notícias',  u:'https://news.google.com',      t:'<span style="color:#4285f4">N</span>' },
+];
+
+const LETTER_COLORS = ['#1a73e8','#ea4335','#f4b400','#34a853','#a142f4','#ff6d01'];
+
+/* ================= TOAST ================= */
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._h);
+  t._h = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ================= PESQUISA ================= */
+const input = $('#searchInput');
+const wrap = $('#searchWrap');
+const sgBox = $('#suggestions');
+let currentSg = [], activeIdx = -1;
+
+function saveHistory() { localStorage.setItem('gg_history', JSON.stringify(history_)); }
+
+function search(q) {
+  q = q.trim();
+  if (!q) return;
+  history_ = [q, ...history_.filter(x => x !== q)].slice(0, 10);
+  saveHistory();
+  location.href = 'https://www.google.com/search?q=' + encodeURIComponent(q);
+}
+
+ $('#searchForm').addEventListener('submit', e => { e.preventDefault(); search(input.value); });
+ $('#searchBtn').addEventListener('click', () => search(input.value));
+ $('#luckyBtn').addEventListener('click', () => { location.href = 'https://www.google.com/doodles'; });
+ $('#micBtn').addEventListener('click', () => toast('🎤 A pesquisa por voz é decorativa nesta recriação.'));
+ $('#lensBtn').addEventListener('click', () => toast('📷 A pesquisa por imagem é decorativa nesta recriação.'));
+
+function buildSgList(q) {
+  q = q.trim().toLowerCase();
+  if (!q) return history_.slice(0, 8).map(h => ({ t: h, hist: true }));
+  const hs = history_.filter(h => h.toLowerCase().includes(q) && h.toLowerCase() !== q).slice(0, 3).map(h => ({ t: h, hist: true }));
+  const ss = SUGGESTIONS.filter(s => s.toLowerCase().includes(q)).slice(0, 8 - hs.length).map(s => ({ t: s }));
+  return [...hs, ...ss];
+}
+
+const ICON_SEARCH = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#9aa0a6" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>';
+const ICON_CLOCK = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#9aa0a6" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+
+function renderSg() {
+  sgBox.innerHTML = '';
+  currentSg.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'sg-item' + (i === activeIdx ? ' active' : '');
+    div.innerHTML = `<span class="sg-icon">${item.hist ? ICON_CLOCK : ICON_SEARCH}</span><span></span>`;
+    div.querySelector('span:last-child').textContent = item.t;
+    div.addEventListener('mousedown', e => { e.preventDefault(); search(item.t); });
+    sgBox.appendChild(div);
+  });
+  wrap.classList.toggle('open', currentSg.length > 0);
+}
+
+function closeSg() { currentSg = []; activeIdx = -1; wrap.classList.remove('open'); }
+
+input.addEventListener('input', () => {
+  $('#clearBtn').classList.toggle('hidden', !input.value);
+  activeIdx = -1;
+  currentSg = buildSgList(input.value);
+  renderSg();
+});
+input.addEventListener('focus', () => {
+  if (!input.value.trim() && history_.length) { currentSg = buildSgList(''); renderSg(); }
+});
+input.addEventListener('blur', () => setTimeout(closeSg, 150));
+input.addEventListener('keydown', e => {
+  if (!currentSg.length) return;
+  if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = (activeIdx + 1) % currentSg.length; renderSg(); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = (activeIdx - 1 + currentSg.length) % currentSg.length; renderSg(); }
+  else if (e.key === 'Escape') closeSg();
+  else if (e.key === 'Enter' && activeIdx >= 0) { e.preventDefault(); search(currentSg[activeIdx].t); }
+});
+
+ $('#clearBtn').addEventListener('click', () => {
+  input.value = '';
+  $('#clearBtn').classList.add('hidden');
+  closeSg();
+  input.focus();
+});
+
+/* ================= ATALHOS ================= */
+const DOTS = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>';
+const PLUS = '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+
+function saveShortcuts() { localStorage.setItem('gg_shortcuts', JSON.stringify(shortcuts)); }
+
+function renderShortcuts() {
+  const wrapSc = $('#shortcuts');
+  wrapSc.innerHTML = '';
+  shortcuts.forEach((s, i) => {
+    let host = '';
+    try { host = new URL(s.url).hostname; } catch {}
+    const a = document.createElement('a');
+    a.className = 'tile';
+    a.href = s.url;
+    a.title = s.url;
+    a.innerHTML = `
+      <button class="tile-edit" title="Editar atalho">${DOTS}</button>
+      <div class="thumb"><span class="letter" style="color:${LETTER_COLORS[i % LETTER_COLORS.length]}"></span><img alt="" onerror="this.style.display='none'" src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=64"></div>
+      <span class="label"></span>`;
+    a.querySelector('.letter').textContent = (s.name || '?').charAt(0).toUpperCase();
+    a.querySelector('.label').textContent = s.name;
+    a.querySelector('.tile-edit').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openModal('edit', i); });
+    wrapSc.appendChild(a);
+  });
+  if (shortcuts.length < 10) {
+    const b = document.createElement('button');
+    b.className = 'tile';
+    b.innerHTML = `<div class="thumb add-thumb">${PLUS}</div><span class="label">Adicionar atalho</span>`;
+    b.addEventListener('click', () => openModal('add'));
+    wrapSc.appendChild(b);
+  }
+}
+
+/* Modal atalho */
+let editIndex = -1;
+const overlay = $('#overlay');
+
+function normalizeUrl(u) {
+  u = u.trim();
+  if (!u) return '';
+  if (!/^https?:\/\//i.test(u)) {
+    if (/^[\w-]+(\.[\w-]+)+/.test(u)) u = 'https://' + u;
+    else return '';
+  }
+  return u;
+}
+
+function openModal(mode, i = -1) {
+  editIndex = i;
+  $('#modalTitle').textContent = mode === 'edit' ? 'Editar atalho' : 'Adicionar atalho';
+  $('#mName').value = mode === 'edit' ? shortcuts[i].name : '';
+  $('#mUrl').value = mode === 'edit' ? shortcuts[i].url : '';
+  $('#mRemove').classList.toggle('hidden', mode !== 'edit');
+  overlay.classList.remove('hidden');
+  $('#mName').focus();
+}
+function closeModal() { overlay.classList.add('hidden'); }
+
+ $('#mDone').addEventListener('click', () => {
+  const name = $('#mName').value.trim();
+  const url = normalizeUrl($('#mUrl').value);
+  if (!url) { toast('Digite uma URL válida.'); return; }
+  if (editIndex >= 0) shortcuts[editIndex] = { name: name || new URL(url).hostname, url };
+  else shortcuts.push({ name: name || new URL(url).hostname, url });
+  saveShortcuts(); renderShortcuts(); closeModal();
+});
+ $('#mRemove').addEventListener('click', () => {
+  shortcuts.splice(editIndex, 1);
+  saveShortcuts(); renderShortcuts(); closeModal();
+});
+ $('#mCancel').addEventListener('click', closeModal);
+overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+
+/* ================= APPS DO GOOGLE ================= */
+const appsPanel = $('#appsPanel');
+function renderApps() {
+  appsPanel.innerHTML = '';
+  APPS.forEach(a => {
+    const el = document.createElement('a');
+    el.className = 'app-item';
+    el.href = a.u;
+    el.innerHTML = `<div class="app-icon${a.plain ? ' plain' : ''}">${a.t}</div><span>${a.n}</span>`;
+    appsPanel.appendChild(el);
+  });
+}
+ $('#appsBtn').addEventListener('click', e => { e.stopPropagation(); appsPanel.classList.toggle('hidden'); });
+document.addEventListener('click', e => {
+  if (!appsPanel.contains(e.target) && e.target !== $('#appsBtn') && !$('#appsBtn').contains(e.target))
+    appsPanel.classList.add('hidden');
+});
+
+/* ================= PERSONALIZAR FUNDO ================= */
+const BGS = {
+  default: { v: '', dark: false, label: 'Padrão' },
+  dark:    { v: '#202124', dark: true, label: 'Escuro' },
+  g1:      { v: 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)', dark: true, label: 'Noite' },
+  g2:      { v: 'linear-gradient(135deg,#fdfbfb,#ebedee)', dark: false, label: 'Neve' },
+  g3:      { v: 'linear-gradient(135deg,#667eea,#764ba2)', dark: true, label: 'Roxo' },
+  g4:      { v: 'linear-gradient(135deg,#232526,#414345)', dark: true, label: 'Grafite' },
+};
+
+function applyBg(key) {
+  const cfg = BGS[key];
+  document.body.style.background = cfg.v || '';
+  document.body.classList.toggle('dark', cfg.dark);
+  localStorage.setItem('gg_bg', key);
+  renderSwatches(key);
+  toast('Fundo aplicado ✓');
+}
+function renderSwatches(selected) {
+  const box = $('#swatches');
+  box.innerHTML = '';
+  Object.entries(BGS).forEach(([key, cfg]) => {
+    const b = document.createElement('button');
+    b.className = 'swatch' + (key === selected ? ' selected' : '');
+    b.style.background = cfg.v || 'var(--bg)';
+    if (!cfg.v) b.style.border = '1px solid var(--footer-border)';
+    b.innerHTML = `<span>${cfg.label}</span>`;
+    b.addEventListener('click', () => applyBg(key));
+    box.appendChild(b);
+  });
+}
+ $('#custBtn').addEventListener('click', () => {
+  renderSwatches(localStorage.getItem('gg_bg') || 'default');
+  $('#custOverlay').classList.remove('hidden');
+});
+ $('#custOverlay').addEventListener('click', e => { if (e.target === $('#custOverlay')) e.currentTarget.classList.add('hidden'); });
+
+/* ================= ESC GLOBAL ================= */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); $('#custOverlay').classList.add('hidden'); appsPanel.classList.add('hidden'); }
+});
+
+/* ================= INIT ================= */
+renderShortcuts();
+renderApps();
+if (!localStorage.getItem('gg_bg') && matchMedia('(prefers-color-scheme: dark)').matches)
+  document.body.classList.add('dark');
+input.focus();
+</script>
+</body>
+</html>
